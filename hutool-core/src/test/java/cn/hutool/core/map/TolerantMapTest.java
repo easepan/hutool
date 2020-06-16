@@ -15,6 +15,7 @@ public class TolerantMapTest {
 	public void before() {
 		map.put("monday", "星期一");
 		map.put("tuesday", "星期二");
+		map.put("null", null);
 	}
 
 	@Test
@@ -36,5 +37,6 @@ public class TolerantMapTest {
 	public void testGet() {
 		assert "星期二".equals(map.get("tuesday"));
 		assert "default".equals(map.get(RandomUtil.randomString(6)));
+		assert "default".equals(map.get("null"));
 	}
 }

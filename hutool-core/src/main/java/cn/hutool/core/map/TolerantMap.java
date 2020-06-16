@@ -1,5 +1,7 @@
 package cn.hutool.core.map;
 
+import cn.hutool.core.util.ObjectUtil;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -73,6 +75,11 @@ public class TolerantMap<K, V> extends MapWrapper<K, V> {
 	@Override
 	public V get(Object key) {
 		return getOrDefault(key, defaultValue);
+	}
+
+	@Override
+	public V getOrDefault(Object key, V defaultValue) {
+		return ObjectUtil.defaultIfNull(super.get(key), defaultValue);
 	}
 
 	@Override
