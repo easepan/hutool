@@ -481,7 +481,7 @@ public class StrUtil {
 	}
 
 	/**
-	 * 除去字符串头尾部的空白，如果字符串是{@code null}，返回<code>""</code>。
+	 * 除去字符串头尾部的空白，如果字符串是{@code null}或者""，返回{@code null}。
 	 *
 	 * <pre>
 	 * StrUtil.trimToNull(null)          = null
@@ -963,6 +963,25 @@ public class StrUtil {
 			return str(str);
 		}
 		return str.toString().replace(strToRemove, EMPTY);
+	}
+
+	/**
+	 * 移除字符串中所有给定字符串，当某个字符串出现多次，则全部移除<br>
+	 * 例：removeAny("aa-bb-cc-dd", "a", "b") =》 --cc-dd
+	 *
+	 * @param str         字符串
+	 * @param strsToRemove 被移除的字符串
+	 * @return 移除后的字符串
+	 * @since 5.3.8
+	 */
+	public static String removeAny(CharSequence str, CharSequence... strsToRemove) {
+		String result = str(str);
+		if (isNotEmpty(str)) {
+			for (CharSequence strToRemove : strsToRemove) {
+				result = removeAll(str, strToRemove);
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -1821,7 +1840,7 @@ public class StrUtil {
 	 */
 	public static String subBefore(CharSequence string, char separator, boolean isLastSeparator) {
 		if (isEmpty(string)) {
-			return null == string ? null : string.toString();
+			return null == string ? null : EMPTY;
 		}
 
 		final String str = string.toString();
@@ -1859,7 +1878,7 @@ public class StrUtil {
 	 */
 	public static String subAfter(CharSequence string, CharSequence separator, boolean isLastSeparator) {
 		if (isEmpty(string)) {
-			return null == string ? null : string.toString();
+			return null == string ? null : EMPTY;
 		}
 		if (separator == null) {
 			return EMPTY;
@@ -1895,7 +1914,7 @@ public class StrUtil {
 	 */
 	public static String subAfter(CharSequence string, char separator, boolean isLastSeparator) {
 		if (isEmpty(string)) {
-			return null == string ? null : string.toString();
+			return null == string ? null : EMPTY;
 		}
 		final String str = string.toString();
 		final int pos = isLastSeparator ? str.lastIndexOf(separator) : str.indexOf(separator);
@@ -3293,11 +3312,11 @@ public class StrUtil {
 		if (null == str) {
 			return null;
 		}
-		if ((str.length() + 3) <= maxLength) {
+		if (str.length() <= maxLength) {
 			return str.toString();
 		}
 		int w = maxLength / 2;
-		int l = str.length();
+		int l = str.length() + 3;
 
 		final String str2 = str.toString();
 		return format("{}...{}", str2.substring(0, maxLength - w), str2.substring(l - w));

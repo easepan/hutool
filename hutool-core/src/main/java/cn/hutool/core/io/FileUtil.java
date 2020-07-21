@@ -9,6 +9,7 @@ import cn.hutool.core.io.file.FileWriter;
 import cn.hutool.core.io.file.LineSeparator;
 import cn.hutool.core.io.file.Tailer;
 import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.io.unit.DataSizeUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.CharUtil;
@@ -50,7 +51,6 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -1848,6 +1848,54 @@ public class FileUtil {
 	}
 
 	/**
+	 * 获取文件后缀名，扩展名不带“.”
+	 *
+	 * @param file 文件
+	 * @return 扩展名
+	 * @see #extName(File)
+	 * @since 5.3.8
+	 */
+	public static String getSuffix(File file) {
+		return extName(file);
+	}
+
+	/**
+	 * 获得文件后缀名，扩展名不带“.”
+	 *
+	 * @param fileName 文件名
+	 * @return 扩展名
+	 * @see #extName(String)
+	 * @since 5.3.8
+	 */
+	public static String getSuffix(String fileName) {
+		return extName(fileName);
+	}
+
+	/**
+	 * 返回主文件名
+	 *
+	 * @param file 文件
+	 * @return 主文件名
+	 * @see #mainName(File)
+	 * @since 5.3.8
+	 */
+	public static String getPrefix(File file) {
+		return mainName(file);
+	}
+
+	/**
+	 * 返回主文件名
+	 *
+	 * @param fileName 完整文件名
+	 * @return 主文件名
+	 * @see #mainName(String)
+	 * @since 5.3.8
+	 */
+	public static String getPrefix(String fileName) {
+		return mainName(fileName);
+	}
+	
+	/**
 	 * 返回主文件名
 	 *
 	 * @param file 文件
@@ -1898,7 +1946,7 @@ public class FileUtil {
 	}
 
 	/**
-	 * 获取文件扩展名，扩展名不带“.”
+	 * 获取文件扩展名（后缀名），扩展名不带“.”
 	 *
 	 * @param file 文件
 	 * @return 扩展名
@@ -1914,7 +1962,7 @@ public class FileUtil {
 	}
 
 	/**
-	 * 获得文件的扩展名，扩展名不带“.”
+	 * 获得文件的扩展名（后缀名），扩展名不带“.”
 	 *
 	 * @param fileName 文件名
 	 * @return 扩展名
@@ -3313,14 +3361,10 @@ public class FileUtil {
 	 *
 	 * @param size Long类型大小
 	 * @return 大小
+	 * @see DataSizeUtil#format(long)
 	 */
 	public static String readableFileSize(long size) {
-		if (size <= 0) {
-			return "0";
-		}
-		final String[] units = new String[]{"B", "kB", "MB", "GB", "TB", "EB"};
-		int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
-		return new DecimalFormat("#,##0.##").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+		return DataSizeUtil.format(size);
 	}
 
 	/**

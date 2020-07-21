@@ -3,7 +3,46 @@
 
 -------------------------------------------------------------------------------------------------------------
 
-## 5.3.8 (2020-06-15)
+## 5.3.10 (2020-07-17)
+
+### 新特性
+* 【db   】       增加DbUtil.setReturnGeneratedKeyGlobal（issue#I1NM0K@Gitee）
+* 【core 】       增加DataSize和DataSizeUtil（issue#967@Github）
+* 【core 】       ImgUtil增加异常，避免空指针（issue#I1NKXG@Gitee）
+
+### Bug修复
+* 【core   】     修复ZipUtil中finish位于循环内的问题（issue#961@Github）
+* 【core   】     修复CollUtil.page未越界检查的问题（issue#I1O2LR@Gitee）
+
+-------------------------------------------------------------------------------------------------------------
+## 5.3.9 (2020-07-12)
+
+### 新特性
+* 【core   】     DateUtil增加formatChineseDate（pr#932@Github）
+* 【core   】     ArrayUtil.isEmpty修改逻辑（pr#948@Github）
+* 【core   】     增强StrUtil中空判断后返回数据性能（pr#949@Github）
+* 【core   】     deprecate掉millsecond，改为millisecond（issue#I1M9P8@Gitee）
+* 【core   】     增加LocalDateTimeUtil（issue#I1KUVC@Gitee）
+* 【core   】     Month增加getLastDay方法
+* 【core   】     ChineseDate支持到2099年
+
+### Bug修复
+* 【core   】     修复NumberUtil.partValue有余数问题（issue#I1KX66@Gitee）
+* 【core   】     修复BeanUtil.isEmpty不能忽略static字段问题（issue#I1KZI6@Gitee）
+* 【core   】     修复StrUtil.brief长度问题（pr#930@Github）
+* 【socket 】     修复AioSession构造超时无效问题（pr#941@Github）
+* 【setting】     修复GroupSet.contains错误（pr#943@Github）
+* 【core   】     修复ZipUtil没有调用finish问题（issue#944@Github）
+* 【extra  】     修复Ftp中ArrayList长度为负问题（pr#136@Github）
+* 【core   】     修复Dict中putAll大小写问题（issue#I1MU5B@Gitee）
+* 【core   】     修复POI中sax读取数字判断错误问题（issue#931@Github）
+* 【core   】     修复DateUtil.endOfQuarter错误问题（issue#I1NGZ7@Gitee）
+* 【core   】     修复URL中有空格转为+问题（issue#I1NGW4@Gitee）
+* 【core   】     修复CollUtil.intersectionDistinct空集合结果错误问题
+* 【core   】     修复ChineseDate在1996年计算错误问题（issue#I1N96I@Gitee）
+
+-------------------------------------------------------------------------------------------------------------
+## 5.3.8 (2020-06-16)
 
 ### 新特性
 * 【core   】     增加ISO8601日期格式（issue#904@Github）
@@ -12,6 +51,10 @@
 * 【core   】     复制创建一个Bean对象, 并忽略某些属性(pr#130@Gitee)
 * 【core   】     DateUtil.parse支持更多日期格式(issue#I1KHTB@Gitee)
 * 【crypto 】     增加获取密钥空指针的检查(issue#925@Github)
+* 【core   】     增加StrUtil.removeAny方法(issue#923@Github)
+* 【db     】     增加部分Connection参数支持(issue#924@Github)
+* 【core   】     FileUtil增加别名方法(pr#926@Github)
+* 【poi    】     EcelReader中增加read重载，提供每个单元格单独处理的方法(issue#I1JZTL@Gitee)
 
 ### Bug修复
 * 【json   】     修复append方法导致的JSONConfig传递失效问题（issue#906@Github）

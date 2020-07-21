@@ -5,7 +5,7 @@
 	<strong>A set of tools that keep Java sweet.</strong>
 </p>
 <p align="center">
-	<a target="_blank" href="https://search.maven.org/search?q=g:%22cn.hutool%22%20AND%20a:%22hutool-all%22">
+	<a target="_blank" href="https://search.maven.org/artifact/cn.hutool/hutool-all">
 		<img src="https://img.shields.io/maven-central/v/cn.hutool/hutool-all.svg?label=Maven%20Central" />
 	</a>
 	<a target="_blank" href="https://license.coscl.org.cn/MulanPSL2/">
@@ -116,21 +116,21 @@ Hutool的存在就是为了减少代码搜索成本，避免网络上参差不�
 <dependency>
     <groupId>cn.hutool</groupId>
     <artifactId>hutool-all</artifactId>
-    <version>5.3.8</version>
+    <version>5.3.10</version>
 </dependency>
 ```
 
 ### Gradle
 ```
-compile 'cn.hutool:hutool-all:5.3.8'
+compile 'cn.hutool:hutool-all:5.3.10'
 ```
 
 ### 非Maven项目
 
 点击以下任一链接，下载`hutool-all-X.X.X.jar`即可：
 
-- [Maven中央库1](https://repo1.maven.org/maven2/cn/hutool/hutool-all/5.3.8/)
-- [Maven中央库2](http://repo2.maven.org/maven2/cn/hutool/hutool-all/5.3.8/)
+- [Maven中央库1](https://repo1.maven.org/maven2/cn/hutool/hutool-all/5.3.10/)
+- [Maven中央库2](http://repo2.maven.org/maven2/cn/hutool/hutool-all/5.3.10/)
 
 > 注意
 > Hutool 5.x支持JDK8+，对Android平台没有测试，不能保证所有工具类或工具方法可用。

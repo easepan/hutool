@@ -2,7 +2,6 @@ package cn.hutool.core.date;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.comparator.CompareUtil;
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.format.DateParser;
 import cn.hutool.core.date.format.DatePrinter;
 import cn.hutool.core.date.format.FastDateFormat;
@@ -322,9 +321,21 @@ public class DateUtil extends CalendarUtil {
 	 *
 	 * @param date 日期
 	 * @return 毫秒数
+	 * @deprecated 拼写错误，请使用{@link #millisecond(Date)}
 	 */
+	@Deprecated
 	public static int millsecond(Date date) {
-		return DateTime.of(date).millsecond();
+		return DateTime.of(date).millisecond();
+	}
+
+	/**
+	 * 获得指定日期的毫秒数部分<br>
+	 *
+	 * @param date 日期
+	 * @return 毫秒数
+	 */
+	public static int millisecond(Date date) {
+		return DateTime.of(date).millisecond();
 	}
 
 	/**
@@ -427,9 +438,18 @@ public class DateUtil extends CalendarUtil {
 
 	/**
 	 * @return 当前日期的毫秒数部分<br>
+	 * @deprecated 拼写错误，请使用{@link #thisMillisecond()}
 	 */
+	@Deprecated
 	public static int thisMillsecond() {
-		return millsecond(date());
+		return millisecond(date());
+	}
+
+	/**
+	 * @return 当前日期的毫秒数部分<br>
+	 */
+	public static int thisMillisecond() {
+		return millisecond(date());
 	}
 	// -------------------------------------------------------------- Part of Date end
 
@@ -612,29 +632,20 @@ public class DateUtil extends CalendarUtil {
 	 *
 	 * @param date        被格式化的日期
 	 * @param isUppercase 是否采用大写形式
+	 * @param withTime    是否包含时间部分
 	 * @return 中文日期字符串
-	 * @since 4.1.19
+	 * @since 5.3.9
 	 */
-	public static String formatChineseDate(Date date, boolean isUppercase) {
+	public static String formatChineseDate(Date date, boolean isUppercase, boolean withTime) {
 		if (null == date) {
 			return null;
 		}
 
-		String format = DatePattern.CHINESE_DATE_FORMAT.format(date);
-		if (isUppercase) {
-			final StringBuilder builder = StrUtil.builder(format.length());
-			builder.append(Convert.numberToChinese(Integer.parseInt(format.substring(0, 1)), false));
-			builder.append(Convert.numberToChinese(Integer.parseInt(format.substring(1, 2)), false));
-			builder.append(Convert.numberToChinese(Integer.parseInt(format.substring(2, 3)), false));
-			builder.append(Convert.numberToChinese(Integer.parseInt(format.substring(3, 4)), false));
-			builder.append(format, 4, 5);
-			builder.append(Convert.numberToChinese(Integer.parseInt(format.substring(5, 7)), false));
-			builder.append(format, 7, 8);
-			builder.append(Convert.numberToChinese(Integer.parseInt(format.substring(8, 10)), false));
-			builder.append(format.substring(10));
-			format = builder.toString().replace('零', '〇');
+		if (false == isUppercase) {
+			return (withTime ? DatePattern.CHINESE_DATE_TIME_FORMAT : DatePattern.CHINESE_DATE_FORMAT).format(date);
 		}
-		return format;
+
+		return CalendarUtil.formatChineseDate(CalendarUtil.calendar(date), withTime);
 	}
 	// ------------------------------------ Format end ----------------------------------------------
 
@@ -824,6 +835,9 @@ public class DateUtil extends CalendarUtil {
 			} else if (length == DatePattern.UTC_MS_WITH_ZONE_OFFSET_PATTERN.length() + 2 || length == DatePattern.UTC_MS_WITH_ZONE_OFFSET_PATTERN.length() + 3) {
 				// 格式类似：2018-09-13T05:34:31.999+0800 或 2018-09-13T05:34:31.999+08:00
 				return parse(utcString, DatePattern.UTC_MS_WITH_ZONE_OFFSET_FORMAT);
+			} else if(length == DatePattern.UTC_SIMPLE_PATTERN.length()-2){
+				// 格式类似：2018-09-13T05:34:31
+				return parse(utcString, DatePattern.UTC_SIMPLE_FORMAT);
 			}
 		}
 		// 没有更多匹配的时间格式
@@ -1409,7 +1423,7 @@ public class DateUtil extends CalendarUtil {
 	 * @since 3.0.1
 	 */
 	public static String formatBetween(long betweenMs) {
-		return new BetweenFormater(betweenMs, BetweenFormater.Level.MILLSECOND).format();
+		return new BetweenFormater(betweenMs, BetweenFormater.Level.MILLISECOND).format();
 	}
 
 	/**
@@ -1858,9 +1872,10 @@ public class DateUtil extends CalendarUtil {
 	 * @param instant {@link Instant}
 	 * @return {@link LocalDateTime}
 	 * @since 5.0.5
+	 * @see LocalDateTimeUtil#of(Instant)
 	 */
 	public static LocalDateTime toLocalDateTime(Instant instant) {
-		return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+		return LocalDateTimeUtil.of(instant);
 	}
 
 	/**
@@ -1869,10 +1884,10 @@ public class DateUtil extends CalendarUtil {
 	 * @param date {@link Date}
 	 * @return {@link LocalDateTime}
 	 * @since 5.0.5
+	 * @see LocalDateTimeUtil#of(Date)
 	 */
 	public static LocalDateTime toLocalDateTime(Date date) {
-		final DateTime dateTime = date(date);
-		return LocalDateTime.ofInstant(dateTime.toInstant(), dateTime.getZoneId());
+		return LocalDateTimeUtil.of(date);
 	}
 
 	/**
