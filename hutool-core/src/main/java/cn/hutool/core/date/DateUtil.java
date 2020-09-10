@@ -14,18 +14,13 @@ import cn.hutool.core.util.StrUtil;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
 import java.time.Year;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -487,7 +482,7 @@ public class DateUtil extends CalendarUtil {
 	 * @return 格式化后的字符串
 	 */
 	public static String formatLocalDateTime(LocalDateTime localDateTime) {
-		return format(localDateTime, DatePattern.NORM_DATETIME_PATTERN);
+		return LocalDateTimeUtil.formatNormal(localDateTime);
 	}
 
 	/**
@@ -498,11 +493,7 @@ public class DateUtil extends CalendarUtil {
 	 * @return 格式化后的字符串
 	 */
 	public static String format(LocalDateTime localDateTime, String format) {
-		if (null == localDateTime || StrUtil.isBlank(format)) {
-			return null;
-		}
-		DateTimeFormatter df = DateTimeFormatter.ofPattern(format);
-		return localDateTime.format(df);
+		return LocalDateTimeUtil.format(localDateTime, format);
 	}
 
 	/**
@@ -670,14 +661,7 @@ public class DateUtil extends CalendarUtil {
 	 * @return LocalDateTime对象
 	 */
 	public static LocalDateTime parseLocalDateTime(CharSequence dateStr, String format) {
-		dateStr = normalize(dateStr);
-		DateTimeFormatter df = DateTimeFormatter.ofPattern(format);
-		try {
-			return LocalDateTime.parse(dateStr, df);
-		} catch (DateTimeParseException e) {
-			// 在给定日期字符串没有时间部分时，LocalDateTime会报错，此时使用LocalDate中转转换
-			return LocalDate.parse(dateStr, df).atStartOfDay();
-		}
+		return LocalDateTimeUtil.parse(dateStr, format);
 	}
 
 	/**
@@ -736,6 +720,21 @@ public class DateUtil extends CalendarUtil {
 	 */
 	public static DateTime parse(CharSequence dateStr, String format, Locale locale) {
 		return new DateTime(dateStr, new SimpleDateFormat(format, locale));
+	}
+
+	/**
+	 * 通过给定的日期格式解析日期时间字符串。<br>
+	 * 传入的日期格式会逐个尝试，直到解析成功，返回{@link DateTime}对象，否则抛出{@link DateException}异常。
+	 *
+	 * @param str           日期时间字符串，非空
+	 * @param parsePatterns 需要尝试的日期时间格式数组，非空, 见SimpleDateFormat
+	 * @return 解析后的Date
+	 * @throws IllegalArgumentException if the date string or pattern array is null
+	 * @throws DateException            if none of the date patterns were suitable
+	 * @since 5.3.11
+	 */
+	public static DateTime parse(String str, String... parsePatterns) throws DateException {
+		return new DateTime(CalendarUtil.parseByPatterns(str, parsePatterns));
 	}
 
 	/**
@@ -835,7 +834,7 @@ public class DateUtil extends CalendarUtil {
 			} else if (length == DatePattern.UTC_MS_WITH_ZONE_OFFSET_PATTERN.length() + 2 || length == DatePattern.UTC_MS_WITH_ZONE_OFFSET_PATTERN.length() + 3) {
 				// 格式类似：2018-09-13T05:34:31.999+0800 或 2018-09-13T05:34:31.999+08:00
 				return parse(utcString, DatePattern.UTC_MS_WITH_ZONE_OFFSET_FORMAT);
-			} else if(length == DatePattern.UTC_SIMPLE_PATTERN.length()-2){
+			} else if (length == DatePattern.UTC_SIMPLE_PATTERN.length() - 2) {
 				// 格式类似：2018-09-13T05:34:31
 				return parse(utcString, DatePattern.UTC_SIMPLE_FORMAT);
 			}
@@ -937,7 +936,7 @@ public class DateUtil extends CalendarUtil {
 					// yyyy-MM-dd HH:mm
 					return parse(dateStr, DatePattern.NORM_DATETIME_MINUTE_FORMAT);
 				case 2:
-					if(StrUtil.contains(dateStr, CharUtil.DOT)){
+					if (StrUtil.contains(dateStr, CharUtil.DOT)) {
 						// yyyy-MM-dd HH:mm:ss.SSS
 						return parse(dateStr, DatePattern.NORM_DATETIME_MS_FORMAT);
 					}
@@ -1043,6 +1042,18 @@ public class DateUtil extends CalendarUtil {
 	}
 
 	/**
+	 * 获取某周的开始时间
+	 *
+	 * @param date               日期
+	 * @param isMondayAsFirstDay 是否周一做为一周的第一天（false表示周日做为第一天）
+	 * @return {@link DateTime}
+	 * @since 5.4.0
+	 */
+	public static DateTime beginOfWeek(Date date, boolean isMondayAsFirstDay) {
+		return new DateTime(beginOfWeek(calendar(date), isMondayAsFirstDay));
+	}
+
+	/**
 	 * 获取某周的结束时间，周日定为一周的结束
 	 *
 	 * @param date 日期
@@ -1050,6 +1061,18 @@ public class DateUtil extends CalendarUtil {
 	 */
 	public static DateTime endOfWeek(Date date) {
 		return new DateTime(endOfWeek(calendar(date)));
+	}
+
+	/**
+	 * 获取某周的结束时间
+	 *
+	 * @param date              日期
+	 * @param isSundayAsLastDay 是否周日做为一周的最后一天（false表示周六做为最后一天）
+	 * @return {@link DateTime}
+	 * @since 5.4.0
+	 */
+	public static DateTime endOfWeek(Date date, boolean isSundayAsLastDay) {
+		return new DateTime(endOfWeek(calendar(date), isSundayAsLastDay));
 	}
 
 	/**
@@ -1445,7 +1468,8 @@ public class DateUtil extends CalendarUtil {
 	}
 
 	/**
-	 * 是否为相同时间
+	 * 是否为相同时间<br>
+	 * 此方法比较两个日期的时间戳是否相同
 	 *
 	 * @param date1 日期1
 	 * @param date2 日期2
@@ -1468,8 +1492,24 @@ public class DateUtil extends CalendarUtil {
 		if (date1 == null || date2 == null) {
 			throw new IllegalArgumentException("The date must not be null");
 		}
-		return isSameDay(calendar(date1), calendar(date2));
+		return CalendarUtil.isSameDay(calendar(date1), calendar(date2));
 	}
+
+	/**
+	 * 比较两个日期是否为同一月
+	 *
+	 * @param date1 日期1
+	 * @param date2 日期2
+	 * @return 是否为同一月
+	 * @since 5.4.1
+	 */
+	public static boolean isSameMonth(final Date date1, final Date date2) {
+		if (date1 == null || date2 == null) {
+			throw new IllegalArgumentException("The date must not be null");
+		}
+		return CalendarUtil.isSameMonth(calendar(date1), calendar(date2));
+	}
+
 
 	/**
 	 * 计时，常用于记录某段代码的执行时间，单位：纳秒
@@ -1838,32 +1878,7 @@ public class DateUtil extends CalendarUtil {
 	 * @since 5.0.2
 	 */
 	public static Instant toInstant(TemporalAccessor temporalAccessor) {
-		if (null == temporalAccessor) {
-			return null;
-		}
-
-		Instant result;
-		if (temporalAccessor instanceof Instant) {
-			result = (Instant) temporalAccessor;
-		} else if (temporalAccessor instanceof LocalDateTime) {
-			result = ((LocalDateTime) temporalAccessor).atZone(ZoneId.systemDefault()).toInstant();
-		} else if (temporalAccessor instanceof ZonedDateTime) {
-			result = ((ZonedDateTime) temporalAccessor).toInstant();
-		} else if (temporalAccessor instanceof OffsetDateTime) {
-			result = ((OffsetDateTime) temporalAccessor).toInstant();
-		} else if (temporalAccessor instanceof LocalDate) {
-			result = ((LocalDate) temporalAccessor).atStartOfDay(ZoneId.systemDefault()).toInstant();
-		} else if (temporalAccessor instanceof LocalTime) {
-			// 指定本地时间转换 为Instant，取当天日期
-			result = ((LocalTime) temporalAccessor).atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toInstant();
-		} else if (temporalAccessor instanceof OffsetTime) {
-			// 指定本地时间转换 为Instant，取当天日期
-			result = ((OffsetTime) temporalAccessor).atDate(LocalDate.now()).toInstant();
-		} else {
-			result = Instant.from(temporalAccessor);
-		}
-
-		return result;
+		return TemporalAccessorUtil.toInstant(temporalAccessor);
 	}
 
 	/**
@@ -1871,8 +1886,8 @@ public class DateUtil extends CalendarUtil {
 	 *
 	 * @param instant {@link Instant}
 	 * @return {@link LocalDateTime}
-	 * @since 5.0.5
 	 * @see LocalDateTimeUtil#of(Instant)
+	 * @since 5.0.5
 	 */
 	public static LocalDateTime toLocalDateTime(Instant instant) {
 		return LocalDateTimeUtil.of(instant);
@@ -1883,8 +1898,8 @@ public class DateUtil extends CalendarUtil {
 	 *
 	 * @param date {@link Date}
 	 * @return {@link LocalDateTime}
-	 * @since 5.0.5
 	 * @see LocalDateTimeUtil#of(Date)
+	 * @since 5.0.5
 	 */
 	public static LocalDateTime toLocalDateTime(Date date) {
 		return LocalDateTimeUtil.of(date);
@@ -1899,6 +1914,18 @@ public class DateUtil extends CalendarUtil {
 	 */
 	public static int lengthOfYear(int year) {
 		return Year.of(year).length();
+	}
+
+	/**
+	 * 获得指定月份的总天数
+	 *
+	 * @param month 年份
+	 * @param isLeapYear 是否闰年
+	 * @return 天
+	 * @since 5.4.2
+	 */
+	public static int lengthOfMonth(int month, boolean isLeapYear) {
+		return java.time.Month.of(month).length(isLeapYear);
 	}
 
 	// ------------------------------------------------------------------------ Private method start

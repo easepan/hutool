@@ -12,16 +12,45 @@ import cn.hutool.core.lang.Matcher;
 import cn.hutool.core.lang.func.Func1;
 import cn.hutool.core.lang.hash.Hash32;
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.util.*;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.CharUtil;
+import cn.hutool.core.util.ClassUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.ReflectUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.TypeUtil;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * 集合相关工具类
@@ -35,40 +64,6 @@ import java.util.function.Function;
  * @since 3.1.1
  */
 public class CollUtil {
-
-	/**
-	 * 填充List，以达到最小长度
-	 *
-	 * @param list 列表
-	 * @param minLen 最小长度
-	 * @param padObj 填充的对象
-	 * @param <T> 集合元素类型
-	 */
-	public static <T> void padLeft(List<T> list, int minLen, T padObj) {
-		Objects.requireNonNull(list);
-		if (list.isEmpty()) {
-			padRight(list, minLen, padObj);
-			return;
-		}
-		for (int i = list.size(); i < minLen; i++) {
-			list.add(0, padObj);
-		}
-	}
-
-	/**
-	 * 填充List，以达到最小长度
-	 *
-	 * @param list 列表
-	 * @param minLen 最小长度
-	 * @param padObj 填充的对象
-	 * @param <T> 集合元素类型
-	 */
-	public static <T> void padRight(Collection<T> list, int minLen, T padObj) {
-		Objects.requireNonNull(list);
-		for (int i = list.size(); i < minLen; i++) {
-			list.add(padObj);
-		}
-	}
 
 	/**
 	 * 如果提供的集合为{@code null}，返回一个不可变的默认空集合，否则返回原集合<br>
@@ -272,7 +267,7 @@ public class CollUtil {
 		}
 		return intersection;
 	}
-	
+
 	/**
 	 * 多个集合的交集<br>
 	 * 针对一个集合中存在多个相同元素的情况，只保留一个<br>
@@ -298,7 +293,7 @@ public class CollUtil {
 
 		if (ArrayUtil.isNotEmpty(otherColls)) {
 			for (Collection<T> otherColl : otherColls) {
-				if(isNotEmpty(otherColl)){
+				if (isNotEmpty(otherColl)) {
 					result.retainAll(otherColl);
 				} else {
 					// 有一个空集合就直接返回空
@@ -414,6 +409,26 @@ public class CollUtil {
 	 */
 	public static boolean contains(Collection<?> collection, Object value) {
 		return isNotEmpty(collection) && collection.contains(value);
+	}
+
+	/**
+	 * 自定义函数判断集合是否包含某类值
+	 *
+	 * @param collection 集合
+	 * @param containFunc 自定义判断函数
+	 * @param <T> 值类型
+	 * @return 是否包含自定义规则的值
+	 */
+	public static <T> boolean contains(Collection<T> collection, Predicate<? super T> containFunc) {
+		if (isEmpty(collection)) {
+			return false;
+		}
+		for (T t : collection) {
+			if (containFunc.test(t)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -552,7 +567,7 @@ public class CollUtil {
 	 */
 	public static <T> List<T> popPart(Stack<T> surplusAlaDatas, int partSize) {
 		if (isEmpty(surplusAlaDatas)) {
-			return null;
+			return ListUtil.empty();
 		}
 
 		final List<T> currentAlaDatas = new ArrayList<>();
@@ -581,7 +596,7 @@ public class CollUtil {
 	 */
 	public static <T> List<T> popPart(Deque<T> surplusAlaDatas, int partSize) {
 		if (isEmpty(surplusAlaDatas)) {
-			return null;
+			return ListUtil.empty();
 		}
 
 		final List<T> currentAlaDatas = new ArrayList<>();
@@ -1086,7 +1101,7 @@ public class CollUtil {
 	 */
 	public static <T> List<T> sub(Collection<T> list, int start, int end, int step) {
 		if (list == null || list.isEmpty()) {
-			return null;
+			return ListUtil.empty();
 		}
 
 		return sub(new ArrayList<>(list), start, end, step);
@@ -1335,7 +1350,7 @@ public class CollUtil {
 	 * @return 抽取后的新列表
 	 * @since 5.3.5
 	 */
-	public static <T, R> List<R> map(Iterable<T> collection, Function<T, R> func, boolean ignoreNull) {
+	public static <T, R> List<R> map(Iterable<T> collection, Function<? super T, ? extends R> func, boolean ignoreNull) {
 		final List<R> fieldValueList = new ArrayList<>();
 		if (null == collection) {
 			return fieldValueList;
@@ -1753,7 +1768,7 @@ public class CollUtil {
 	 */
 	public static <K, V> Map<K, V> zip(Collection<K> keys, Collection<V> values) {
 		if (isEmpty(keys) || isEmpty(values)) {
-			return null;
+			return MapUtil.empty();
 		}
 
 		int entryCount = Math.min(keys.size(), values.size());
@@ -2008,7 +2023,7 @@ public class CollUtil {
 		if (null == collection || null == value) {
 			return collection;
 		}
-		if (TypeUtil.isUnknow(elementType)) {
+		if (TypeUtil.isUnknown(elementType)) {
 			// 元素类型为空时，使用Object类型来接纳所有类型
 			elementType = Object.class;
 		}
@@ -2786,6 +2801,42 @@ public class CollUtil {
 		}
 	}
 
+	/**
+	 * 填充List，以达到最小长度
+	 *
+	 * @param <T>    集合元素类型
+	 * @param list   列表
+	 * @param minLen 最小长度
+	 * @param padObj 填充的对象
+	 * @since 5.3.10
+	 */
+	public static <T> void padLeft(List<T> list, int minLen, T padObj) {
+		Objects.requireNonNull(list);
+		if (list.isEmpty()) {
+			padRight(list, minLen, padObj);
+			return;
+		}
+		for (int i = list.size(); i < minLen; i++) {
+			list.add(0, padObj);
+		}
+	}
+
+	/**
+	 * 填充List，以达到最小长度
+	 *
+	 * @param <T>    集合元素类型
+	 * @param list   列表
+	 * @param minLen 最小长度
+	 * @param padObj 填充的对象
+	 * @since 5.3.10
+	 */
+	public static <T> void padRight(Collection<T> list, int minLen, T padObj) {
+		Objects.requireNonNull(list);
+		for (int i = list.size(); i < minLen; i++) {
+			list.add(padObj);
+		}
+	}
+
 	// ---------------------------------------------------------------------------------------------- Interface start
 
 	/**
@@ -2794,6 +2845,7 @@ public class CollUtil {
 	 * @param <T> 处理参数类型
 	 * @author Looly
 	 */
+	@FunctionalInterface
 	public interface Consumer<T> {
 		/**
 		 * 接受并处理一个参数
@@ -2811,6 +2863,7 @@ public class CollUtil {
 	 * @param <V> VALUE类型
 	 * @author Looly
 	 */
+	@FunctionalInterface
 	public interface KVConsumer<K, V> {
 		/**
 		 * 接受并处理一对参数
